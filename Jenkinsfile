@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_REPO = "REPLACE_DOCKERHUB_REPO"
+    DOCKERHUB_REPO = "royparthasarathi/newme-shopee"
     IMAGE_TAG = "${env.BUILD_NUMBER}"
     AWS_REGION = "ap-south-1"
     TERRAFORM_DIR = "infra"
