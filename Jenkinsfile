@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  tools {
+    maven 'Maven-3.9'
+  }
+
   environment {
     DOCKERHUB_REPO = "royparthasarathi/newme-shopee"
     IMAGE_TAG = "${env.BUILD_NUMBER}"
@@ -17,14 +21,8 @@ pipeline {
     }
 
     stage('Build (Maven)') {
-      agent {
-        docker {
-          image 'maven:3.9.6-eclipse-temurin-17'
-          args '-v $HOME/.m2:/root/.m2'
-        }
-      }
       steps {
-        sh 'mvn -B -DskipTests package'
+        sh "mvn -B -DskipTests package"
       }
     }
 
@@ -49,13 +47,13 @@ pipeline {
       }
     }
 
-    stage('Update Terraform / Deploy') {
+    stage('Terraform Apply') {
       steps {
         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_CREDENTIALS']]) {
           dir("${TERRAFORM_DIR}") {
             sh '''
-              terraform init -input=false -no-color
-              terraform apply -auto-approve -var="docker_image_tag=${IMAGE_TAG}" -no-color
+              terraform init -input=false
+              terraform apply -auto-approve -var="docker_image_tag=${IMAGE_TAG}"
             '''
           }
         }
@@ -65,10 +63,10 @@ pipeline {
 
   post {
     success {
-      echo "Deployed ${env.DOCKERHUB_REPO}:${IMAGE_TAG}"
+      echo "Deployment Successful"
     }
     failure {
-      echo "Build or deployment failed"
+      echo "Build or Deployment Failed"
     }
   }
 }
