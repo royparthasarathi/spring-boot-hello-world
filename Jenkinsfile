@@ -2,13 +2,14 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_REPO = "REPLACE_DOCKERHUB_REPO"   // e.g. username/newme-shopee
+    DOCKERHUB_REPO = "REPLACE_DOCKERHUB_REPO"
     IMAGE_TAG = "${env.BUILD_NUMBER}"
     AWS_REGION = "ap-south-1"
-    TERRAFORM_DIR = "infra" // if you store terraform files in infra/
+    TERRAFORM_DIR = "infra"
   }
 
   stages {
+
     stage('Checkout') {
       steps {
         checkout scm
@@ -16,8 +17,14 @@ pipeline {
     }
 
     stage('Build (Maven)') {
+      agent {
+        docker {
+          image 'maven:3.9.6-eclipse-temurin-17'
+          args '-v $HOME/.m2:/root/.m2'
+        }
+      }
       steps {
-        sh 'mvn -B -DskipTests package' // adjust for your build
+        sh 'mvn -B -DskipTests package'
       }
     }
 
